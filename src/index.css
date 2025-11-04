@@ -1,0 +1,33 @@
+/* ✅ Add your font first */
+@font-face {
+  font-family: 'Modum';
+  src: url('./assets/fonts/Modum.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+
+
+/* ✅ Then keep Tailwind imports */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Optional utility class */
+.font-modum {
+  font-family: 'Modum', sans-serif;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-slideIn {
+  animation: slideIn 0.3s ease-out forwards;
+}
+
