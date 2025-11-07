@@ -1,25 +1,47 @@
-// src/components/NavigationBar.js
 import { CircleUser, ShoppingCart, Search, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { auth } from "../firebaseConfig";
-import { useCart } from "../pages/CartContext"; // ✅ FIX: import useCart
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { useCart } from "../pages/CartContext";
 import logo from "../pics/AlNoor_Edtech_logo.png";
 
 export default function NavigationBar() {
   const [openDropdown, setOpenDropdown] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [query, setQuery] = useState("");
+  const [user, setUser] = useState(null);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const navigate = useNavigate();
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const { cartItems, removeFromCart, currencySymbol, convertPrice } = useCart();
 
-  const { cartItems, removeFromCart } = useCart(); // ✅ FIX: use properly
+  // ✅ Check user auth state
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
 
-  const handleProfileClick = () => {
-    if (auth.currentUser) navigate("/profile");
-    else navigate("/login");
+  // ✅ Handle logout
+  const handleLogout = async () => {
+    await signOut(auth);
+    setUser(null);
+    setShowUserMenu(false);
+    navigate("/login");
   };
 
+  // ✅ Handle profile click (if not logged in)
+  const handleProfileClick = () => {
+    if (user) {
+      setShowUserMenu(!showUserMenu);
+    } else {
+      navigate("/register");
+    }
+  };
+
+  // ✅ Search submit
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (query.trim()) {
@@ -59,9 +81,9 @@ export default function NavigationBar() {
             </button>
             {openDropdown && (
               <div className="absolute left-0 top-full w-52 bg-white shadow-lg rounded-lg py-2 z-50">
-                <a href="/books" className="block px-4 py-2 text-sm hover:bg-brand">Books</a>
-                <a href="/resources/courses" className="block px-4 py-2 text-sm hover:bg-brand">Courses</a>
-                <a href="/resources/sessions" className="block px-4 py-2 text-sm hover:bg-brand">Sessions</a>
+                <a href="/books" className="block px-4 py-2 text-sm hover:bg-yellow-100">Books</a>
+                <a href="/resources/courses" className="block px-4 py-2 text-sm hover:bg-yellow-100">Courses</a>
+                <a href="/resources/sessions" className="block px-4 py-2 text-sm hover:bg-yellow-100">Sessions</a>
                 <a href="/resources/motherhood-app" className="block px-4 py-2 text-sm hover:bg-yellow-100">Motherhood App</a>
               </div>
             )}
@@ -77,29 +99,72 @@ export default function NavigationBar() {
 
         {/* Icons */}
         <div className="flex items-center space-x-4">
+          {/* 🔍 Search */}
           <Search
             className="cursor-pointer hover:text-yellow-500"
             onClick={() => setShowSearch(!showSearch)}
           />
-          <CircleUser
-            className="cursor-pointer hover:text-yellow-500"
-            onClick={handleProfileClick}
-          />
-         <div className="relative">
-  <ShoppingCart
-    className="cursor-pointer hover:text-yellow-500"
-    onClick={() => setIsCartOpen(true)}
-  />
-  {cartItems.length > 0 && (
-    <span className="absolute -top-2 -right-2 bg-yellow-500 text-black text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
-      {cartItems.reduce((sum, item) => sum + item.quantity, 0)}
-    </span>
-  )}
-</div>
 
+          {/* 👤 User Avatar */}
+          <div className="relative">
+            {user ? (
+              <>
+                <div
+                  onClick={handleProfileClick}
+                  title={user.email}
+                  className="w-10 h-10 bg-yellow-500 text-white rounded-full flex items-center justify-center cursor-pointer font-semibold"
+                >
+                  {user.email?.[0]?.toUpperCase()}
+                </div>
+
+                {/* User Dropdown */}
+                {showUserMenu && (
+                  <div className="absolute right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg w-48 z-50">
+                    <div className="px-4 py-2 text-sm text-gray-600 border-b truncate">
+                      {user.email}
+                    </div>
+                    <button
+                      onClick={() => {
+                        navigate("/profile");
+                        setShowUserMenu(false);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-yellow-100"
+                    >
+                      My Profile
+                    </button>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left px-4 py-2 hover:bg-yellow-100"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <CircleUser
+                className="cursor-pointer hover:text-yellow-500"
+                onClick={handleProfileClick}
+                title="Login / Register"
+              />
+            )}
+          </div>
+
+          {/* 🛒 Cart */}
+          <div className="relative">
+            <ShoppingCart
+              className="cursor-pointer hover:text-yellow-500"
+              onClick={() => setIsCartOpen(true)}
+            />
+            {cartItems.length > 0 && (
+              <span className="absolute -top-2 -right-2 bg-yellow-500 text-black text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
+                {cartItems.reduce((sum, item) => sum + item.quantity, 0)}
+              </span>
+            )}
+          </div>
         </div>
 
-        {/* Search Overlay */}
+        {/* 🔍 Search Overlay */}
         {showSearch && (
           <div className="absolute inset-0 bg-white flex items-center justify-center">
             <form
@@ -145,44 +210,47 @@ export default function NavigationBar() {
               </p>
             ) : (
               <div className="flex flex-col space-y-4 overflow-y-auto flex-grow">
-              {cartItems.map((item, idx) => (
-  <div
-    key={item.id || idx}
-    className="flex items-center justify-between border-b pb-2"
-  >
-    <img
-      src={item.image}
-      alt={item.title}
-      className="w-12 h-12 object-cover rounded"
-    />
-    <div className="flex-1 ml-3">
-      <p className="font-medium text-gray-800">{item.title}</p>
-      <p className="text-sm text-gray-500">
-        {item.quantity} × ${item.price.toFixed(2)}
-      </p>
-    </div>
-    <button
-      onClick={() => removeFromCart(item.id)}
-      className="text-red-500 hover:text-red-700"
-    >
-      <X size={16} />
-    </button>
-  </div>
+                {cartItems.map((item, idx) => (
+                  <div
+                    key={item.id || idx}
+                    className="flex items-center justify-between border-b pb-2"
+                  >
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      className="w-12 h-12 object-cover rounded"
+                    />
+                    <div className="flex-1 ml-3">
+                      <p className="font-medium text-gray-800">{item.title}</p>
+                      <p className="text-sm text-gray-500">
+                        {item.quantity} × {currencySymbol}
+                        {convertPrice(item.price).toFixed(2)}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => removeFromCart(item.id)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
                 ))}
               </div>
             )}
 
-            {/* Footer */}
             <div className="mt-auto border-t pt-4">
-             <p className="flex justify-between text-lg font-semibold">
-  <span>Subtotal:</span>
-  <span>
-    $
-    {cartItems
-      .reduce((sum, i) => sum + i.price * i.quantity, 0)
-      .toFixed(2)}
-  </span>
-</p>
+              <p className="flex justify-between text-lg font-semibold">
+                <span>Subtotal:</span>
+                <span>
+                  {currencySymbol}
+                  {cartItems
+                    .reduce(
+                      (sum, i) => sum + convertPrice(i.price) * i.quantity,
+                      0
+                    )
+                    .toFixed(2)}
+                </span>
+              </p>
 
               <button
                 onClick={() => {

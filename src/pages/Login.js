@@ -13,6 +13,8 @@ export default function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError("");
+
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
@@ -22,12 +24,19 @@ export default function Login() {
       const snapshot = await get(child(dbRef, "users/" + user.uid));
 
       if (snapshot.exists()) {
-        navigate("/profile"); // Profile exists → go to Profile page
+        navigate("/profile"); // Profile found
       } else {
-        navigate("/profile-setup"); // First login → go to Profile Setup
+        navigate("/profile-setup"); // No profile yet
       }
     } catch (err) {
-      setError(err.message);
+      // Better user-friendly error handling
+      if (err.code === "auth/user-not-found") {
+        setError("No account found with this email. Please sign up first.");
+      } else if (err.code === "auth/wrong-password") {
+        setError("Incorrect password. Try again.");
+      } else {
+        setError("Login failed. " + err.message);
+      }
     }
   };
 
@@ -60,13 +69,11 @@ export default function Login() {
           Login
         </button>
 
-        {/* Sign up link */}
         <p className="text-sm text-center text-gray-600">
           Don’t have an account?{" "}
-        <Link to="/register" className="text-yellow-500 hover:underline">
-  Sign up
-</Link>
-
+          <Link to="/register" className="text-yellow-500 hover:underline">
+            Sign up
+          </Link>
         </p>
       </form>
     </div>

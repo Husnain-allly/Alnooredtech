@@ -1,8 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { books } from "../pages/Booksdata";
+import { useCurrency } from "../pages/CurrencyContext";  // ✅ currency context
 
 export default function BooksPage() {
   const navigate = useNavigate();
+  const { currency } = useCurrency();  // ✅ get current currency
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10 p-10 bg-white">
@@ -19,7 +21,10 @@ export default function BooksPage() {
           />
           <div className="p-4 text-gray-800">
             <h2 className="font-semibold text-lg mb-1">{book.title}</h2>
-            <p className="text-gray-700 font-medium">{book.price}</p>
+            {/* ✅ Correct price display */}
+            <p className="text-gray-700 font-medium">
+              {currency.symbol} {currency.value}
+            </p>
           </div>
         </div>
       ))}

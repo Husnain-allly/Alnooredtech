@@ -54,7 +54,7 @@ export default function ProductPage() {
 
           {/* Price */}
           <p className="text-xl text-gray-600 mb-4">
-            {currency ? `${currency.symbol} ${book.price * currency.value}` : "Loading price..."}
+             {currency ? `${currency.symbol} ${currency.value}` : "Loading price..."}
           </p>
 
           <div className="flex items-center gap-1 mb-4">
@@ -78,14 +78,13 @@ export default function ProductPage() {
             <button
               className="bg-brand text-black hover:bg-black hover:text-yellow-500 transition-all duration-300 px-6 py-2 font-bold shadow-md"
               onClick={() =>
-                addToCart({
-                  id: book.id,
-                  title: book.title,
-                  price: book.price * currency.value,
-                  symbol: currency.symbol,
-                  image: book.images[0],
-                  quantity,
-                })
+               addToCart({
+  id: book.id,
+  title: book.title,
+  price: book.price, // ✅ keep base PKR price only
+  image: book.images[0],
+  quantity,
+})
               }
             >
               Add To Cart

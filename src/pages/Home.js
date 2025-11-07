@@ -2,7 +2,7 @@ import React from "react";
 import Button from "../components/Button";
 import { motion, useAnimation } from "framer-motion";
 import { useInView } from "react-intersection-observer";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent } from "../components/Card";
 import { FileText, BookOpen, BarChart3, Rocket } from "lucide-react";
 import "./Home.css";
@@ -72,27 +72,43 @@ const items = [
   const controls = useAnimation();
   const textControls = useAnimation();
   const [ref, inView] = useInView({ threshold: 0.3 });
-
+ const [inView2, setInView] = useState(false);
   useEffect(() => {
-    if (inView) {
-      // 🔹 Trigger animation when in view
-      textControls.start({
-        opacity: 1,
-        y: 0,
-        transition: { duration: 0.8, ease: "easeOut" },
-      });
-      controls.start({
-        opacity: 1,
-        x: 0,
-        y: 0,
-        transition: { duration: 1, ease: "easeOut" },
-      });
-    } else {
-      // 🔹 Reset when out of view
-      textControls.start({ opacity: 0, y: 30 });
-      controls.start({ opacity: 0, x: 200, y: -200 });
+  const handleScroll = () => {
+    const section = document.getElementById("stay-connected");
+    if (section) {
+      const rect = section.getBoundingClientRect();
+      const isVisible = rect.top < window.innerHeight * 0.8 && rect.bottom >= 0;
+      if (isVisible) setInView(true);
+      else setInView(false);
     }
-  }, [inView, textControls, controls]);
+  };
+
+  window.addEventListener("scroll", handleScroll);
+  return () => window.removeEventListener("scroll", handleScroll);
+}, []);
+
+useEffect(() => {
+  if (inView) {
+    // 🔹 Trigger animation when in view
+    textControls.start({
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.8, ease: "easeOut" },
+    });
+    controls.start({
+      opacity: 1,
+      x: 0,
+      y: 0,
+      transition: { duration: 1, ease: "easeOut" },
+    });
+  } else {
+    // 🔹 Reset when out of view
+    textControls.start({ opacity: 0, y: 30 });
+    controls.start({ opacity: 0, x: 200, y: -200 });
+  }
+}, [inView, textControls, controls]);
+
 
   return (
     <div>
@@ -192,17 +208,40 @@ const items = [
 </section>
 
 
-       
-      <section className="relative px-16 pb-38 py-16  bg-brand text-center md:text-left">
-  <h3 className="text-5xl font-bold font-modum mb-8 tracking-wide">YOUR LIFE, YOUR STAGE</h3>
-  <p className="-mt-4 mb-12 text-gray-800 max-w-xl">
-    Alnoor Edtech helps you to live a balanced, fulfilling life in harmony.
-  </p>
+  <section className="relative px-8 md:px-16 py-16 bg-brand text-center md:text-left overflow-hidden">
+      {/* Heading */}
+      <motion.h3
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        viewport={{ once: true }}
+        className="text-5xl font-bold font-modum mb-8 tracking-wide"
+      >
+        YOUR LIFE, YOUR STAGE
+      </motion.h3>
 
-<img src={ylys} alt="Your Life, Your Stage" />
-  
+      {/* Paragraph */}
+      <motion.p
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
+        viewport={{ once: true }}
+        className="-mt-4 mb-12 text-gray-800 max-w-xl"
+      >
+        Alnoor Edtech helps you to live a balanced, fulfilling life in harmony.
+      </motion.p>
 
-</section>
+      {/* Image */}
+      <motion.img
+        src={ylys}
+        alt="Your Life, Your Stage"
+        initial={{ opacity: 0, scale: 0.9 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 1, delay: 0.4, ease: "easeOut" }}
+        viewport={{ once: false }}
+        className="mx-auto md:mx-0 rounded-3xl shadow-lg"
+      />
+    </section>
 
 <div
   className="h-[60vh] relative"
@@ -396,77 +435,96 @@ const items = [
 </div>
 </section>
 
+<section id="stay-connected">
+      <div className="relative bg-brand overflow-hidden">
+        {/* Yellow Top Section */}
+        <div className="h-48 bg-brand"></div>
 
-     <section>
-       <div className="relative bg-brand">
-      {/* Yellow Top Section */}
-      <div className="h-48 bg-brand"></div>
+        {/* White + Black Curve */}
+        <div className="relative">
+          <svg
+            className="absolute top-[-1px] left-0 w-full"
+            viewBox="0 0 1440 320"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            {/* Black Line (base) */}
+            <path
+              d="M0,96L60,117.3C120,139,240,181,360,197.3C480,213,600,203,720,176C840,149,960,107,1080,117.3C1200,128,1320,192,1380,224L1440,256"
+              stroke="black"
+              strokeWidth="6"
+              fill="none"
+              strokeLinecap="round"
+            />
 
-      {/* White Wavy Divider */}
-      <div className="relative">
-        <svg
-          className="absolute top-[-1px] left-0 w-full"
-          viewBox="0 0 1440 320"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            fill="#ffffff"
-            d="M0,96L60,117.3C120,139,240,181,360,197.3C480,213,600,203,720,176C840,149,960,107,1080,117.3C1200,128,1320,192,1380,224L1440,256L1440,320L0,320Z"
-          />
-        </svg>
+            {/* Animated White Glow */}
+            <motion.path
+              d="M0,96L60,117.3C120,139,240,181,360,197.3C480,213,600,203,720,176C840,149,960,107,1080,117.3C1200,128,1320,192,1380,224L1440,256"
+              stroke="white"
+              strokeWidth="6"
+              fill="none"
+              strokeLinecap="round"
+              strokeDasharray="200 1000"
+              strokeDashoffset="1000"
+              animate={
+                inView2
+                  ? {
+                      strokeDashoffset: [1000, -1000],
+                      opacity: [0.2, 1, 0.2],
+                      transition: {
+                        duration: 4,
+                        ease: "linear",
+                        repeat: Infinity,
+                      },
+                    }
+                  : {}
+              }
+            />
+          </svg>
+        </div>
+
+        {/* Main Content */}
+        <div className="relative max-w-6xl mx-10 px-4 pb-16 -mt-32">
+          <h3 className="text-2xl tracking-wide md:text-5xl font-modum font-bold mb-12">
+            STAY CONNECTED, KEEP GROWING
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 place-items-center">
+            {/* Left Circle */}
+            <div className="relative">
+              <div className="w-60 h-60 bg-white rounded-full shadow-lg flex items-center justify-center p-8 text-center">
+                <p className="text-sm">
+                  <b>Subscribe</b>
+                  <br /> to receive weekly tips, free guides, and updates on new
+                  courses—delivered straight to your inbox
+                </p>
+              </div>
+
+              <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-6">
+                <button className="bg-brand text-black hover:bg-black hover:text-yellow-500 transition-all duration-300 px-6 py-2 font-bold shadow-md">
+                  SUBSCRIBE
+                </button>
+              </div>
+            </div>
+
+            {/* Right Circle */}
+            <div className="relative">
+              <div className="w-60 h-60 bg-white rounded-full shadow-lg flex items-center justify-center p-8 text-center">
+                <p className="text-sm">
+                  <b>Sign up for newsletter</b>
+                  <br /> is a small dose of wisdom, encouragement, and practical
+                  advice designed to brighten your everyday routine
+                </p>
+              </div>
+
+              <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-6">
+                <button className="bg-brand text-black hover:bg-black hover:text-yellow-500 transition-all duration-300 px-6 py-2 font-bold shadow-md">
+                  SIGN UP
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-
-      {/* Main Content */}
-      <div className="relative max-w-6xl mx-10 px-4 pb-16 -mt-32">
-        <h3 className="text-2xl tracking-wide md:text-5xl font-modum font-bold mb-12">
-          STAY CONNECTED, KEEP GROWING
-        </h3>
-
-      {/* Circles Section */}
-<div className="grid grid-cols-1 md:grid-cols-2 gap-12 place-items-center">
-  
-  {/* Left Circle */}
-  <div className="relative">
-    {/* Circle */}
-    <div className="w-60 h-60 bg-white rounded-full shadow-lg flex items-center justify-center p-8 text-center">
-      <p className="text-sm">
-       <b>Subscribe</b>  <br/> to receive weekly tips, free guides, and updates on new
-        courses—delivered straight to your inbox
-      </p>
-    </div>
-
-    {/* Button outside circle */}
-    <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-6">
-    
-     
-    <button className="bg-brand brand text-black  hover:bg-black  hover:text-yellow-500 active:bg-black  active:text-yellow-500 transition-all duration-300 px-6 py-2 font-bold shadow-md">
-        SUBSCRIBE
-      </button>
-    </div>
-  </div>
-
-  {/* Right Circle */}
-  <div className="relative">
-    {/* Circle */}
-    <div className="w-60 h-60 bg-white rounded-full shadow-lg flex items-center justify-center p-8 text-center">
-      <p className="text-sm">
-       <b> Sign up for newsletter</b> <br/> is a small dose of wisdom, encouragement,
-        and practical advice designed to brighten your everyday routine
-      </p>
-    </div>
-
-    {/* Button outside circle */}
-    <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-6">
-      <button className="bg-brand brand text-black  hover:bg-black  hover:text-yellow-500 active:bg-black  active:text-yellow-500 transition-all duration-300 px-6 py-2 font-bold shadow-md">
-        SIGN UP
-      </button>
-     
-
-    </div>
-  </div>
-</div>
-</div>
-</ div> 
     </section>
    
     </div>
