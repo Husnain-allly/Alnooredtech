@@ -21,3 +21,5 @@ const app = initializeApp(firebaseConfig);
 // Export auth and db for other files
 export const auth = getAuth(app);
 export const db = getDatabase(app);
+
+

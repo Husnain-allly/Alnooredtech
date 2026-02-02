@@ -5,7 +5,7 @@ import { useInView } from "react-intersection-observer";
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "../components/Card";
 import { FileText, BookOpen, BarChart3, Rocket } from "lucide-react";
-import "./Home.css";
+import '../css/Home.css';
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination } from "swiper/modules";
 import "swiper/css";

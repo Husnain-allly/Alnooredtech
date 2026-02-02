@@ -222,10 +222,11 @@ export default function NavigationBar() {
                     />
                     <div className="flex-1 ml-3">
                       <p className="font-medium text-gray-800">{item.title}</p>
-                      <p className="text-sm text-gray-500">
-                        {item.quantity} × {currencySymbol}
-                        {convertPrice(item.price).toFixed(2)}
-                      </p>
+                     <p className="text-sm text-gray-500">
+  {item.quantity} × {currencySymbol}
+  {(Number(convertPrice(item.basePricePKR ?? item.pricePKR ?? item.price ?? 0)) || 0).toFixed(2)}
+</p>
+
                     </div>
                     <button
                       onClick={() => removeFromCart(item.id)}
@@ -243,12 +244,16 @@ export default function NavigationBar() {
                 <span>Subtotal:</span>
                 <span>
                   {currencySymbol}
-                  {cartItems
-                    .reduce(
-                      (sum, i) => sum + convertPrice(i.price) * i.quantity,
-                      0
-                    )
-                    .toFixed(2)}
+{cartItems
+  .reduce(
+    (sum, i) =>
+      sum +
+      Number(convertPrice(i.basePricePKR ?? i.pricePKR ?? i.price ?? 0)) *
+        (i.quantity || 1),
+    0
+  )
+  .toFixed(2)}
+
                 </span>
               </p>
 

@@ -1,27 +1,33 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { books } from "../pages/Booksdata";
 import { Star } from "lucide-react";
-import { useCart } from "../pages/CartContext";
-import { useCurrency } from "../pages/CurrencyContext"; // ✅ use context
+
+import { books } from "./Booksdata";                 // ✅ updated path
+import { useCart } from "./CartContext";          // ✅ updated path
+import { useCurrency } from "./CurrencyContext";  // ✅ updated path
+import { convertFromPKR } from "../utils/money";           // ✅ updated path
 
 export default function ProductPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const book = books.find((b) => b.id === parseInt(id));
+
+  const book = books.find((b) => b.id === Number(id));
   const [activeImage, setActiveImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
+
   const { addToCart } = useCart();
-  const { currency } = useCurrency(); // ✅ currency from context
+  const { currency, symbol, rates } = useCurrency();
+
+  const displayPrice = useMemo(() => {
+    if (!book) return 0;
+    return convertFromPKR(book.pricePKR, currency, rates);
+  }, [book, currency, rates]);
 
   if (!book) return <p className="p-10 text-center">Book not found!</p>;
 
   return (
     <div className="min-h-screen bg-white text-gray-800">
-      <button
-        onClick={() => navigate(-1)}
-        className="p-2 m-4 bg-brand rounded"
-      >
+      <button onClick={() => navigate(-1)} className="p-2 m-4 bg-brand rounded">
         Back
       </button>
 
@@ -52,9 +58,9 @@ export default function ProductPage() {
         <div>
           <h2 className="text-2xl font-bold mb-2">{book.title}</h2>
 
-          {/* Price */}
+          {/* ✅ Correct Price */}
           <p className="text-xl text-gray-600 mb-4">
-             {currency ? `${currency.symbol} ${currency.value}` : "Loading price..."}
+            {symbol} {Number.isFinite(displayPrice) ? displayPrice.toFixed(2) : "—"}
           </p>
 
           <div className="flex items-center gap-1 mb-4">
@@ -62,7 +68,7 @@ export default function ProductPage() {
               <Star key={i} className="w-5 h-5 text-brand fill-brand" />
             ))}
             <span className="ml-2 text-sm text-gray-500">
-              ({book.reviews} customer reviews)
+              ({book.reviews ?? 0} customer reviews)
             </span>
           </div>
 
@@ -70,21 +76,31 @@ export default function ProductPage() {
 
           <div className="flex items-center gap-4 mb-6">
             <div className="flex items-center border rounded">
-              <button className="px-3 py-1 text-lg" onClick={() => setQuantity(Math.max(1, quantity - 1))}>-</button>
+              <button
+                className="px-3 py-1 text-lg"
+                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+              >
+                -
+              </button>
               <span className="px-4">{quantity}</span>
-              <button className="px-3 py-1 text-lg" onClick={() => setQuantity(quantity + 1)}>+</button>
+              <button
+                className="px-3 py-1 text-lg"
+                onClick={() => setQuantity((q) => q + 1)}
+              >
+                +
+              </button>
             </div>
 
             <button
               className="bg-brand text-black hover:bg-black hover:text-yellow-500 transition-all duration-300 px-6 py-2 font-bold shadow-md"
               onClick={() =>
-               addToCart({
-  id: book.id,
+                addToCart({
+                  id: book.id,
   title: book.title,
-  price: book.price, // ✅ keep base PKR price only
+  basePricePKR: book.pricePKR,
   image: book.images[0],
   quantity,
-})
+                })
               }
             >
               Add To Cart
@@ -102,8 +118,12 @@ export default function ProductPage() {
 
       {/* Description */}
       <section className="max-w-6xl mx-auto px-6 mt-12 pb-12">
-        <h3 className="text-xl font-semibold border-b pb-2 mb-4">Description</h3>
-        <p className="text-gray-700 leading-relaxed whitespace-pre-line">{book.description}</p>
+        <h3 className="text-xl font-semibold border-b pb-2 mb-4">
+          Description
+        </h3>
+        <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+          {book.description}
+        </p>
       </section>
     </div>
   );
